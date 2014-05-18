@@ -34,6 +34,8 @@ struct lisp_object *c_read(FILE *input) {
   
   if (initial == '\'') {
     ret->quoted = C_TRUE;
+    /* Read the next character */
+    initial = fgetc(input);
   }
 
   /* List */
@@ -140,6 +142,5 @@ struct lisp_object *c_read(FILE *input) {
     ret->data = text;
   }
 
-  printf("ret=%p\n", ret);
   return ret;
 }
