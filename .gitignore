@@ -1,5 +1,8 @@
 *~
 a.out
+build
 lisp
 *.o
 .#*
+CMakeCache.txt
+CMakeFiles
