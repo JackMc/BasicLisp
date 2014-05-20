@@ -3,6 +3,16 @@
 #include <stdio.h>
 
 static void c_print_internal(struct lisp_object *obj) {
+  if (!obj) {
+    if (has_error()) {
+      fprintf(stderr, "%s", get_error());
+    }
+    else {
+      fprintf(stderr, "An unspecified error occurred.");
+    }
+    return;
+  }
+
   switch (obj->obj_type) {
   case LIST:
     if (obj->quoted) {

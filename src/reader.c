@@ -86,8 +86,7 @@ struct lisp_object *c_read(FILE *input) {
     /* Some special handling for if the list is empty ('()') */
     if (head == NULL) {
       /* NULL data in a LIST type means () or nil. */
-      ret->data = NULL;
-      return ret;
+      return nil;
     }
 
     ret->data = head;

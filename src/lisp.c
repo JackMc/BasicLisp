@@ -5,6 +5,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 
 struct lisp_object *t;
 struct lisp_object *nil;
@@ -13,16 +14,22 @@ struct symbol *symbol_table;
 static int symbol_table_counter;
 static int symbol_table_size;
 
+struct symbol *local_symbols;
+int local_symbols_counter;
+
+char *glob_error;
+
 void register_builtins() {
   base_initialize();
   math_initialize();
 }
 
-static struct symbol *get_new_symbol();
-
 void lisp_initialize() {
-  /* Initialize the symbol table and add nil and t. */
+  /* We don't have a context, so the local symbol table is NULL */
+  local_symbols = NULL;
+  local_symbols_counter = 0;
 
+  /* Initialize the symbol table and add nil and t. */
   symbol_table = malloc(sizeof(struct symbol)*SYMBOL_TABLE_INITIAL_SIZE);
   symbol_table_size = SYMBOL_TABLE_INITIAL_SIZE;
   symbol_table_counter = 0;
@@ -51,6 +58,8 @@ void lisp_initialize() {
   nil_symbol->symbol_name = "nil";
   nil_symbol->value = nil;
 
+  glob_error = NULL;
+
   /* Register builtin functions */
   register_builtins();
 }
@@ -67,7 +76,7 @@ struct lisp_object *lisp_object_deep_copy(struct lisp_object *obj) {
   case LIST:
   {
     if (!(obj->data)) {
-      ret->data = NULL;
+      return nil;
     }
 
     struct lisp_object *current = (struct lisp_object*)(obj->data);
@@ -113,15 +122,14 @@ struct lisp_object *lisp_object_deep_copy(struct lisp_object *obj) {
   }
   case T_TYPE:
   {
-    ret->data = NULL;
-    return obj;
+    return t;
     break;
   }
   }
   return ret;
 }
 
-static struct symbol *get_new_symbol() {
+struct symbol *get_new_symbol() {
   if (symbol_table_counter == symbol_table_size) {
     /* Extend the symbol table by the scale factor */
     symbol_table_size *= SYMBOL_TABLE_SCALE_FACTOR;
@@ -131,16 +139,42 @@ static struct symbol *get_new_symbol() {
   return &(symbol_table[symbol_table_counter++]);
 }
 
-struct lisp_object *symbol_lookup(char *key) {
+struct symbol *symbol_lookup(char *key) {
   int i;
+
+  if (local_symbols) {
+    for (i = 0; i < local_symbols_counter; i++) {
+      if (strcmp(local_symbols[i].symbol_name, key) == 0) {
+        /* Return a pointer. */
+        return local_symbols + i;
+      }
+    }
+  }
 
   for (i = 0; i < symbol_table_counter; i++) {
     if (strcmp(symbol_table[i].symbol_name, key) == 0) {
-      return symbol_table[i].value;
+      /* Return a pointer. */
+      return symbol_table + i;
     }
   }
 
   return NULL;
+}
+
+struct lisp_object *symbol_value(char *key) {
+  struct symbol *sym = symbol_lookup(key);
+
+  return sym ? sym->value : NULL;
+}
+
+void set_local_symbols(struct symbol *syms, int length) {
+  local_symbols = syms;
+  local_symbols_counter = length;
+}
+
+void unset_local_symbols() {
+  local_symbols = NULL;
+  local_symbols_counter = 0;
 }
 
 void define_builtin_function(char *symbol_name, enum paramspec spec, int numparams,
@@ -207,4 +241,24 @@ struct lisp_object *make_lisp_object(enum type obj_type, void *data) {
   obj->next = NULL;
   obj->prev = NULL;
   obj->quoted = C_FALSE;
+}
+
+void set_error(char *error, ...) {
+  va_list va;
+  va_start(va, error);
+
+  /* HACK: No way to tell if the expanded message will be > MAX_ERROR */
+  char *buf = malloc(MAX_ERROR*sizeof(char));
+
+  vsprintf(buf, error, va);
+
+  glob_error = buf;
+}
+
+char *get_error() {
+  return glob_error;
+}
+
+C_BOOL has_error() {
+  return glob_error != NULL;
 }
