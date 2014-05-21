@@ -114,7 +114,11 @@ DEFUN("print", lisp_print, VAR_MIN, 1) {
 
 DEFUN("setq", lisp_setq, VAR_FIXED | UNEVAL_ARGS, 2) {
   struct lisp_object *sym_obj = HEAD(args);
-  struct lisp_object *value = sym_obj->next;
+  /*
+   * We evaluate first so that the expression cannot try to access the symbol
+   * if it doesn't exist.
+   */
+  struct lisp_object *value = c_eval(sym_obj->next);
 
   struct symbol *sym = symbol_lookup(SYM_NAME(sym_obj));
 
@@ -123,7 +127,7 @@ DEFUN("setq", lisp_setq, VAR_FIXED | UNEVAL_ARGS, 2) {
   }
 
   sym->symbol_name = SYM_NAME(sym_obj);
-  sym->value = c_eval(value);
+  sym->value = value;
 
   return nil;
 }
@@ -134,9 +138,23 @@ DEFUN("while", lisp_while, VAR_FIXED | UNEVAL_ARGS, 2) {
 
   struct lisp_object *body_evaled = nil;
 
-  while (TRUEP(c_eval(cond))) {
+  struct lisp_object *current = c_eval(cond);
+
+  if (!current) {
+    return NULL;
+  }
+
+  while (TRUEP(current)) {
     if (body) {
       body_evaled = c_eval(body);
+      if (!body_evaled) {
+        return NULL;
+      }
+    }
+
+    current = c_eval(cond);
+    if (!current) {
+      return NULL;
     }
   }
 
@@ -218,6 +236,52 @@ DEFUN("symbols", lisp_symbols, VAR_FIXED, 0) {
   return make_lisp_object(LIST, head);
 }
 
+/* Returns the CAR (the first element) of the given list. */
+DEFUN("car", lisp_car, VAR_FIXED, 1) {
+  struct lisp_object *list = HEAD(args);
+
+  if (list->obj_type != LIST) {
+    set_error("Cannot take car of non-list.");
+    return NULL;
+  }
+  if (list->data == NULL) {
+    set_error("Cannot take car of nil.");
+    return NULL;
+  }
+
+  struct lisp_object *ret = lisp_object_deep_copy(HEAD(list));
+
+  ret->next = NULL;
+  ret->prev = NULL;
+
+  return ret;
+}
+
+DEFUN("cdr", lisp_cdr, VAR_FIXED, 1) {
+  struct lisp_object *list = HEAD(args);
+
+  if (list->obj_type != LIST) {
+    set_error("Cannot take cdr of non-list.");
+    return NULL;
+  }
+  if (list->data == NULL) {
+    set_error("Cannot take cdr of nil.");
+    return NULL;
+  }
+
+  struct lisp_object *old_head = HEAD(list);
+
+  /* Temporarily screw up the old list to make deep copy work */
+  list->data = HEAD(list)->next;
+
+  /* Makes a copy of the list without the first element */
+  struct lisp_object *cdr = lisp_object_deep_copy(list);
+
+  list->data = old_head;
+
+  return cdr;
+}
+
 void base_initialize() {
   lisp_if_init();
   lisp_lt_init();
@@ -230,4 +294,6 @@ void base_initialize() {
   lisp_while_init();
   lisp_defun_init();
   lisp_symbols_init();
+  lisp_cdr_init();
+  lisp_car_init();
 }
