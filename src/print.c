@@ -15,6 +15,7 @@ static void c_print_internal(struct lisp_object *obj) {
 
   switch (obj->obj_type) {
   case LIST:
+  {
     if (obj->quoted) {
       printf("'");
     }
@@ -31,6 +32,7 @@ static void c_print_internal(struct lisp_object *obj) {
     }
     printf(")");
     break;
+  }
   case INTEGER:
     printf("%d", *((int*)(obj->data)));
     break;
@@ -45,6 +47,15 @@ static void c_print_internal(struct lisp_object *obj) {
     break;
   case T_TYPE:
     printf("t");
+    break;
+  case FUNCTION:
+    printf("<function at %p>", obj);
+    break;
+  case BUILTIN:
+    printf("<builtin at %p>", obj);
+    break;
+  default:
+    printf("<object at %p>", obj);
     break;
   }
 }

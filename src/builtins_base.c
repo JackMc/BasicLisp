@@ -9,7 +9,8 @@ DEFUN("<", lisp_lt, VAR_FIXED, 2) {
   struct lisp_object *second = first->next;
 
   if (first->obj_type != INTEGER || second->obj_type != INTEGER) {
-    /* We don't know if this is correct */
+    set_error("Can only compare integers with <.");
+    return NULL;
   }
 
   if (TOLINT(first) < TOLINT(second)) {
@@ -25,7 +26,8 @@ DEFUN(">", lisp_gt, VAR_FIXED, 2) {
   struct lisp_object *second = first->next;
 
   if (first->obj_type != INTEGER || second->obj_type != INTEGER) {
-    /* Signal an error */
+    set_error("Can only compare integers with >.");
+    return NULL;
   }
 
   if (TOLINT(first) > TOLINT(second)) {
@@ -41,7 +43,8 @@ DEFUN("=", lisp_eq, VAR_FIXED, 2) {
   struct lisp_object *second = first->next;
 
   if (first->obj_type != INTEGER || second->obj_type != INTEGER) {
-    /* Signal an error */
+    set_error("= can only compare integers.");
+    return NULL;
   }
 
   if (TOLINT(first) == TOLINT(second)) {
@@ -59,7 +62,8 @@ DEFUN("if", lisp_if, VAR_MIN | UNEVAL_ARGS, 2) {
   int length = list_length(args);
 
   if (length > 3) {
-    /* Signal an error of some kind */
+    set_error("Incorrect number of arguments (%d) to function if!", length);
+    return NULL;
   }
 
   struct lisp_object *head = HEAD(args);
@@ -84,6 +88,11 @@ DEFUN("if", lisp_if, VAR_MIN | UNEVAL_ARGS, 2) {
 }
 
 DEFUN("prints", lisp_prints, VAR_FIXED, 1) {
+  if (HEAD(args)->obj_type != STRING) {
+    set_error("Argument to prints must be a string.");
+    return NULL;
+  }
+
   char *to_print = TOSTR(HEAD(args));
 
   printf("%s\n", to_print);
@@ -91,8 +100,14 @@ DEFUN("prints", lisp_prints, VAR_FIXED, 1) {
   return nil;
 }
 
-DEFUN("print", lisp_print, VAR_FIXED, 1) {
-  c_print(HEAD(args));
+DEFUN("print", lisp_print, VAR_MIN, 1) {
+  struct lisp_object *current = HEAD(args);
+
+  while (current) {
+    c_print(current);
+
+    current = current->next;
+  }
 
   return nil;
 }
@@ -152,22 +167,55 @@ DEFUN("defun", lisp_defun, VAR_MIN | UNEVAL_ARGS, 3) {
   params->next = NULL;
   forms->prev = NULL;
 
-  /*
-   * TODO: Set up the forms/params in a function object and insert it in a
-   * symbol.
-   */
   struct lisp_function *func = malloc(sizeof(struct lisp_function));
   func->params = params;
   func->forms = forms;
 
   func->numparams = list_length(params);
 
-  struct symbol *sym = get_new_symbol();
+  struct symbol *sym = symbol_lookup(SYM_NAME(name));
+
+  if (!sym) {
+    sym = get_new_symbol();
+  }
 
   sym->symbol_name = SYM_NAME(name);
   sym->value = make_lisp_object(FUNCTION, func);
 
   return name;
+}
+
+DEFUN("symbols", lisp_symbols, VAR_FIXED, 0) {
+  int i;
+
+  struct lisp_object *head = make_lisp_object(LIST, NULL);
+
+  struct lisp_object *prev = NULL;
+  struct lisp_object *current = NULL;
+
+  for (i = 0; i < symbol_table_counter; i++) {
+      struct symbol *sym = symbol_table + i;
+
+      struct lisp_object *symref = make_lisp_object(SYMBOL, sym->symbol_name);
+      struct lisp_object *value = lisp_object_deep_copy(sym->value);
+      symref->next = value;
+      value->prev = symref;
+      if (i == 0) {
+        current = head;
+        current->data = symref;
+      }
+      else {
+        current = make_lisp_object(LIST, symref);
+      }
+
+      current->prev = prev;
+      if (prev) {
+        prev->next = current;
+      }
+      prev = current;
+  }
+
+  return make_lisp_object(LIST, head);
 }
 
 void base_initialize() {
@@ -181,4 +229,5 @@ void base_initialize() {
   lisp_progn_init();
   lisp_while_init();
   lisp_defun_init();
+  lisp_symbols_init();
 }

@@ -10,7 +10,7 @@ struct lisp_object *c_eval(struct lisp_object *obj) {
     return new_obj;
   }
 
-  struct lisp_object *ret = malloc(sizeof(struct lisp_object*));
+  struct lisp_object *ret = malloc(sizeof(struct lisp_object));
   ret->prev = NULL;
   ret->next = NULL;
 
@@ -20,7 +20,9 @@ struct lisp_object *c_eval(struct lisp_object *obj) {
     struct lisp_object *head = HEAD(obj);
 
     if (!head) {
-      return nil;
+      ret->data = NULL;
+      ret->obj_type = LIST;
+      return ret;
     }
 
     if (head->obj_type != SYMBOL || head->quoted) {

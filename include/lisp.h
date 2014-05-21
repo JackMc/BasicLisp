@@ -44,6 +44,7 @@ struct symbol {
 };
 
 extern struct symbol *symbol_table;
+extern int symbol_table_counter;
 
 /*
  * Initialize the Lisp interpreter symbol table and builtins.
@@ -162,7 +163,7 @@ C_BOOL true_p(struct lisp_object * obj);
 
 struct lisp_object *make_lisp_object(enum type obj_type, void *data);
 
-#define HEAD(list) (struct lisp_object *)(list->data)
+#define HEAD(list) ((struct lisp_object *)(list->data))
 #define TRUEP(obj) true_p(obj)
 
 /* Possibly changing constants */

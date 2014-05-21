@@ -83,15 +83,17 @@ struct lisp_object *c_read(FILE *input) {
      *  (')' character).
      */
     struct lisp_object *head = c_read(input);
-    /* Some special handling for if the list is empty ('()') */
-    if (head == NULL) {
-      /* NULL data in a LIST type means () or nil. */
-      return nil;
-    }
 
     ret->data = head;
     struct lisp_object *current = NULL;
     struct lisp_object *prev = head;
+
+    /* Some special handling for if the list is empty ('()') */
+    if (head == NULL) {
+      /* NULL data in a LIST type means () or nil. */
+      ret->data = NULL;
+      return ret;
+    }
 
     while (current = c_read(input)) {
       current->prev = prev;

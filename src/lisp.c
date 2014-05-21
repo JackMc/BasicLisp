@@ -11,7 +11,7 @@ struct lisp_object *t;
 struct lisp_object *nil;
 
 struct symbol *symbol_table;
-static int symbol_table_counter;
+int symbol_table_counter;
 static int symbol_table_size;
 
 struct symbol *local_symbols;
@@ -76,7 +76,8 @@ struct lisp_object *lisp_object_deep_copy(struct lisp_object *obj) {
   case LIST:
   {
     if (!(obj->data)) {
-      return nil;
+      ret->data = NULL;
+      return ret;
     }
 
     struct lisp_object *current = (struct lisp_object*)(obj->data);
