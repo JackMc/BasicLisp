@@ -45,6 +45,7 @@ void lisp_initialize() {
   struct symbol *t_symbol = get_new_symbol();
   t_symbol->symbol_name = "t";
   t_symbol->value = t;
+  t_symbol->constant = C_TRUE;
 
   /* Nil - The FALSE value in Lisp. Equivalent in value to an empty list. */
   nil = malloc(sizeof(struct lisp_object));
@@ -57,6 +58,7 @@ void lisp_initialize() {
   struct symbol *nil_symbol = get_new_symbol();
   nil_symbol->symbol_name = "nil";
   nil_symbol->value = nil;
+  nil_symbol->constant = C_TRUE;
 
   glob_error = NULL;
 
@@ -137,7 +139,11 @@ struct symbol *get_new_symbol() {
     symbol_table = realloc(symbol_table, symbol_table_size);
   }
 
-  return &(symbol_table[symbol_table_counter++]);
+  struct symbol *sym = &(symbol_table[symbol_table_counter++]);
+
+  sym->constant = C_FALSE;
+
+  return sym;
 }
 
 struct symbol *symbol_lookup(char *key) {

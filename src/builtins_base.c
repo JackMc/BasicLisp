@@ -114,6 +114,12 @@ DEFUN("print", lisp_print, VAR_MIN, 1) {
 
 DEFUN("setq", lisp_setq, VAR_FIXED | UNEVAL_ARGS, 2) {
   struct lisp_object *sym_obj = HEAD(args);
+
+  if (sym_obj->obj_type != SYMBOL) {
+    set_error("First argument to setq must be a symbol reference.");
+    return NULL;
+  }
+
   /*
    * We evaluate first so that the expression cannot try to access the symbol
    * if it doesn't exist.
@@ -124,6 +130,10 @@ DEFUN("setq", lisp_setq, VAR_FIXED | UNEVAL_ARGS, 2) {
 
   if (!sym) {
     sym = get_new_symbol();
+  }
+  else if (sym->constant) {
+    set_error("Symbol %s is a fundamental constant and cannot be modified.", sym->symbol_name);
+    return NULL;
   }
 
   sym->symbol_name = SYM_NAME(sym_obj);

@@ -41,6 +41,7 @@ extern struct lisp_object *nil;
 struct symbol {
   char *symbol_name;
   struct lisp_object *value;
+  C_BOOL constant;
 };
 
 extern struct symbol *symbol_table;
