@@ -66,9 +66,22 @@ DEFUN("/", lisp_divide, VAR_MIN, 2) {
   return make_lisp_object(INTEGER, ret);
 }
 
+DEFUN("%", lisp_mod, VAR_FIXED, 2) {
+  LISPINT *ret = malloc(sizeof(LISPINT));
+
+  struct lisp_object *first = HEAD(args);
+
+  struct lisp_object *second = first->next;
+
+  (*ret) = TOLINT(first) % TOLINT(second);
+
+  return make_lisp_object(INTEGER, ret);
+}
+
 void math_initialize() {
   lisp_add_init();
   lisp_subtract_init();
   lisp_multiply_init();
   lisp_divide_init();
+  lisp_mod_init();
 }
