@@ -66,10 +66,7 @@ struct lisp_object *c_read(FILE *input) {
   }
 
   if (feof(input)) {
-    fprintf(stderr, "Unexpected end-of-file while parsing.");
-
-    /* TODO: Do something a little less radical here... */
-    exit(1);
+    set_error("Unexpected end-of-file while parsing.");
 
     return NULL;
   }

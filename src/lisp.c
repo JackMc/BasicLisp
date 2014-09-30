@@ -45,26 +45,17 @@ void lisp_initialize() {
   symbol_table_counter = 0;
 
   /* Only object of type T_TYPE ever constructed. */
-  t = malloc(sizeof(struct lisp_object));
-  t->obj_type = T_TYPE;
-  t->prev = NULL;
-  t->next = NULL;
-  t->quoted = C_FALSE;
-  /* Data is never accessed. */
-  t->data = NULL;
+  t = make_lisp_object(T_TYPE, NULL);
+
   struct symbol *t_symbol = get_new_symbol();
   t_symbol->symbol_name = "t";
   t_symbol->value = t;
   t_symbol->constant = C_TRUE;
 
   /* Nil - The FALSE value in Lisp. Equivalent in value to an empty list. */
-  nil = malloc(sizeof(struct lisp_object));
-  nil->obj_type = LIST;
-  nil->prev = NULL;
-  nil->next = NULL;
-  nil->quoted = C_FALSE;
   /* With a list, NULL data means an empty list. */
-  nil->data = NULL;
+  nil = make_lisp_object(LIST, NULL);
+  
   struct symbol *nil_symbol = get_new_symbol();
   nil_symbol->symbol_name = "nil";
   nil_symbol->value = nil;
@@ -77,12 +68,7 @@ void lisp_initialize() {
 }
 
 struct lisp_object *lisp_object_deep_copy(struct lisp_object *obj) {
-  struct lisp_object *ret = malloc(sizeof(struct lisp_object));
-
-  ret->obj_type = obj->obj_type;
-  ret->quoted = obj->quoted;
-  ret->prev = NULL;
-  ret->next = NULL;
+  struct lisp_object *ret = make_lisp_object(obj->obj_type, NULL);
 
   switch (obj->obj_type) {
   case LIST:
@@ -198,20 +184,14 @@ void define_builtin_function(char *symbol_name, enum paramspec spec, int numpara
 			     struct lisp_object* (*func)(struct lisp_object*)) {
   /* Handles the allocation of the symbol from the pool */
   struct symbol *sym = get_new_symbol();
-
-  struct lisp_object *obj = malloc(sizeof(struct lisp_object));
+  
   struct lisp_builtin *builtin = malloc(sizeof(struct lisp_builtin));
   builtin->func = func;
   builtin->spec = spec;
   builtin->params = numparams;
 
-  obj->obj_type = BUILTIN;
-  obj->data = builtin;
-  obj->next = NULL;
-  obj->prev = NULL;
-
   sym->symbol_name = symbol_name;
-  sym->value = obj;
+  sym->value = make_lisp_object(BUILTIN, builtin);
 }
 
 int list_length(struct lisp_object *list) {
@@ -278,4 +258,14 @@ char *get_error() {
 
 C_BOOL has_error() {
   return glob_error != NULL;
+}
+
+void lisp_error() {
+  if (has_error()) {
+    fprintf(stderr, "%s", get_error());
+  }
+  else {
+    fprintf(stderr, "An unspecified error occurred.");
+  }
+  return;
 }

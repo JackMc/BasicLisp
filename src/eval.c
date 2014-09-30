@@ -14,24 +14,25 @@
 #include <stdlib.h>
 
 struct lisp_object *c_eval(struct lisp_object *obj) {
+  if (!obj) {
+    lisp_error();
+  }
+  
   if (obj->quoted) {
     struct lisp_object *new_obj = lisp_object_deep_copy(obj);
     new_obj->quoted = C_FALSE;
     return new_obj;
   }
 
-  struct lisp_object *ret = malloc(sizeof(struct lisp_object));
-  ret->prev = NULL;
-  ret->next = NULL;
-
   switch (obj->obj_type) {
   case LIST:
   {
+    struct lisp_object *ret = make_lisp_object(LIST, NULL);
+    
     struct lisp_object *head = HEAD(obj);
 
     if (!head) {
-      ret->data = NULL;
-      ret->obj_type = LIST;
+      // It already is nil
       return ret;
     }
 
@@ -41,12 +42,6 @@ struct lisp_object *c_eval(struct lisp_object *obj) {
     }
 
     struct lisp_object *func = c_eval(head);
-
-    struct lisp_object *args = nil;
-    args->prev = NULL;
-    args->next = NULL;
-    args->data = NULL;
-    args->obj_type = LIST;
 
     if (!func) {
       set_error("Function %s doesn't exist.", TOSTR(head));
@@ -58,10 +53,10 @@ struct lisp_object *c_eval(struct lisp_object *obj) {
       return NULL;
     }
 
+    /* Allocate an object to be used to store the copied arguments list */
+    struct lisp_object *args = make_lisp_object(LIST, NULL);
+    
     if (head->next) {
-      /* Keep a new object :) */
-      args = malloc(sizeof(struct lisp_object));
-
       struct lisp_object *args_head;
 
       if (func->obj_type == BUILTIN && (TOBUILTIN(func)->spec & UNEVAL_ARGS)) {
@@ -155,12 +150,12 @@ struct lisp_object *c_eval(struct lisp_object *obj) {
 
       struct lisp_object *form_current = func_obj->forms;
 
-      struct lisp_object *ret = nil;
+      struct lisp_object *sub = nil;
 
       while (form_current) {
-        ret = c_eval(form_current);
+        sub = c_eval(form_current);
 
-        if (!ret) {
+        if (!sub) {
           return NULL;
         }
 

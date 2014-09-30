@@ -88,12 +88,9 @@ DEFUN("if", lisp_if, VAR_MIN | UNEVAL_ARGS, 2) {
   if (TRUEP(condition)) {
     return c_eval(then_clause);
   }
-  else if (else_clause) {
-    return c_eval(else_clause);
-  }
   else {
-    /* Don't execute anything because we weren't given a parameter for 'else' */
-    return nil;
+    /* If it's nil, we're OK because nil evaluates to nil (elevator -- Elisa) */
+    return c_eval(else_clause);
   }
 }
 
