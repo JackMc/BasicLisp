@@ -1,3 +1,4 @@
+
 /*
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -81,6 +82,11 @@ DEFUN("if", lisp_if, VAR_MIN | UNEVAL_ARGS, 2) {
   struct lisp_object *condition = c_eval(head);
   struct lisp_object *then_clause = head->next;
   struct lisp_object *else_clause = NULL;
+
+  if (!condition) {
+    return NULL;
+  }
+  
   if (length == 3) {
     else_clause = then_clause->next;
   }

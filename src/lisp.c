@@ -124,7 +124,10 @@ struct lisp_object *lisp_object_deep_copy(struct lisp_object *obj) {
     return t;
     break;
   }
+  default:
+    break;
   }
+
   return ret;
 }
 
@@ -225,9 +228,9 @@ C_BOOL true_p(struct lisp_object *obj) {
     if (!(obj->data)) {
       return C_FALSE;
     }
+  default:
+    return C_TRUE;
   }
-
-  return C_TRUE;
 }
 
 struct lisp_object *make_lisp_object(enum type obj_type, void *data) {
@@ -238,6 +241,11 @@ struct lisp_object *make_lisp_object(enum type obj_type, void *data) {
   obj->next = NULL;
   obj->prev = NULL;
   obj->quoted = C_FALSE;
+  obj->counter = 0;
+
+  CLAIM(obj);
+
+  return obj;
 }
 
 void set_error(char *error, ...) {

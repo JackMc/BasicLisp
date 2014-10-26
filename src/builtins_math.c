@@ -11,6 +11,7 @@
 #include "lisp.h"
 
 #include <stdlib.h>
+#include <math.h>
 
 DEFUN("+", lisp_add, VAR_MIN, 2) {
   LISPINT *sum = malloc(sizeof(LISPINT));
@@ -88,10 +89,23 @@ DEFUN("%", lisp_mod, VAR_FIXED, 2) {
   return make_lisp_object(INTEGER, ret);
 }
 
+DEFUN("^", lisp_power, VAR_FIXED, 2) {
+  LISPINT * ret = malloc(sizeof(LISPINT));
+
+  struct lisp_object *first = HEAD(args);
+
+  struct lisp_object *second = first->next;
+
+  (*ret) = pow(TOLINT(first), TOLINT(second));
+
+  return make_lisp_object(INTEGER, ret);
+}
+
 void math_initialize() {
   lisp_add_init();
   lisp_subtract_init();
   lisp_multiply_init();
   lisp_divide_init();
   lisp_mod_init();
+  lisp_power_init();
 }

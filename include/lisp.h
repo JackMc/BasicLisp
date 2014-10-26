@@ -13,9 +13,14 @@
 
 #include <stdio.h>
 
+#include "builtins_interpreter.h"
+
 #define C_BOOL int
 #define C_TRUE 1
 #define C_FALSE 0
+
+#define CLAIM(obj) (obj->counter++)
+#define REMOVE(obj) (obj->counter--)
 
 enum type {
   INTEGER, /* LISPINT * */
@@ -36,6 +41,7 @@ struct lisp_object {
   enum type obj_type;
 
   C_BOOL quoted;
+  int counter;
 };
 
 /* Type conversion macros */
@@ -125,6 +131,8 @@ void define_builtin_function(char *symbol_name, enum paramspec spec, int numpara
 
 struct symbol *symbol_lookup(char *key);
 struct lisp_object *symbol_value(char *key);
+void set_local_symbols(struct symbol *symbols, int count);
+void unset_local_symbols();
 
 /*
  * Set the error and the error flag
@@ -135,6 +143,9 @@ void set_error(char *error, ...);
   * Gets the current error or NULL if no error has occurred.
   */
 char *get_error();
+
+/* Deals with a Lisp error in some unspecified manner (does not quit) */
+void lisp_error();
 
 /*
  * Returns C_TRUE if an error has occurred.
@@ -168,6 +179,9 @@ struct lisp_function {
   void func_name ## _init () { \
     define_builtin_function( lisp_name , spec , numparams , func_name ); \
   } \
+  DEFUN_NO_INIT(func_name)
+
+#define DEFUN_NO_INIT(func_name) \
   struct lisp_object * func_name (struct lisp_object *args)
 
 C_BOOL true_p(struct lisp_object * obj);

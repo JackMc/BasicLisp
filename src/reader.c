@@ -102,7 +102,7 @@ struct lisp_object *c_read(FILE *input) {
       return ret;
     }
 
-    while (current = c_read(input)) {
+    while ((current = c_read(input))) {
       current->prev = prev;
       current->prev->next = current;
       current->next = NULL;
@@ -112,9 +112,11 @@ struct lisp_object *c_read(FILE *input) {
 
   /* Integers */
   else if (initial == '-' || isdigit(initial)) {
+    /* There is a special case in that - can be a symbol */
     if (initial == '-') {
       char checker = fgetc(input);
 
+      /* Therefore, we check if the - is immediately followed by whitespace */
       if (isspace(checker)) {
         ungetc(checker, input);
 

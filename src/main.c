@@ -11,6 +11,7 @@
 #include "lisp.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <errno.h>
 
 int main(int argc, char **argv) {
@@ -24,15 +25,21 @@ int main(int argc, char **argv) {
     read_from = fopen(argv[1], "r");
     if (!read_from) {
       perror("Error while opening main file: ");
+      return EXIT_FAILURE;
     }
     break;
   }
   default:
     printf("Too many arguments. Use like %s [file]", argv[0]);
-    break;
+    return EXIT_FAILURE;
   }
   
   lisp_initialize();
+
+  if (read_from == NULL) {
+    interpreter_initialize();
+  }
+  
   while (C_TRUE) {
     printf(">>> ");
     c_print(c_eval(c_read(read_from)));

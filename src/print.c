@@ -15,6 +15,7 @@
 static void c_print_internal(struct lisp_object *obj) {
   if (!obj) {
     lisp_error();
+    return;
   }
   
   switch (obj->obj_type) {

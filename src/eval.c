@@ -16,6 +16,7 @@
 struct lisp_object *c_eval(struct lisp_object *obj) {
   if (!obj) {
     lisp_error();
+    return NULL;
   }
   
   if (obj->quoted) {
