@@ -112,7 +112,7 @@ struct lisp_object *c_read(FILE *input) {
 
   /* Integers */
   else if (initial == '-' || isdigit(initial)) {
-    /* There is a special case in that - can be a symbol */
+    /* There is a special case in that "-" can be a symbol */
     if (initial == '-') {
       char checker = fgetc(input);
 

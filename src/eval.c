@@ -123,7 +123,7 @@ struct lisp_object *c_eval(struct lisp_object *obj) {
 
       return builtin->func(args);
     }
-    else {
+    else if (func->obj_type == FUNCTION) {
       struct lisp_function *func_obj = TOFUNC(func);
 
       int count = list_length(args);
@@ -159,6 +159,9 @@ struct lisp_object *c_eval(struct lisp_object *obj) {
         if (!sub) {
           return NULL;
         }
+
+        // Keep track of the return value
+        ret = sub;
 
         form_current = form_current->next;
       }
