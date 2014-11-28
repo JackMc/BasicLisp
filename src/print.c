@@ -10,8 +10,6 @@
 
 #include "lisp.h"
 
-#include <stdio.h>
-
 static void c_print_internal(struct lisp_object *obj) {
   if (!obj) {
     lisp_error();
@@ -39,7 +37,7 @@ static void c_print_internal(struct lisp_object *obj) {
     break;
   }
   case INTEGER:
-    printf("%d", *((int*)(obj->data)));
+    printf(LISPINT_FORMAT, TOLINT(obj));
     break;
   case STRING:
     printf("\"%s\"", (char*)(obj->data));

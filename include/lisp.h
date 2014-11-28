@@ -131,7 +131,7 @@ void define_builtin_function(char *symbol_name, enum paramspec spec, int numpara
 
 struct symbol *symbol_lookup(char *key);
 struct lisp_object *symbol_value(char *key);
-void set_local_symbols(struct symbol *symbols, int count);
+void set_local_symbols(struct symbol *symbols, size_t count);
 void unset_local_symbols();
 
 /*
@@ -206,8 +206,8 @@ struct lisp_object *make_lisp_object(enum type obj_type, void *data);
 #define SYMBOL_TABLE_INITIAL_SIZE 100
 #define SYMBOL_TABLE_SCALE_FACTOR 2
 
-#define LISPINT int
-#define LISPINT_FORMAT "%d"
+#define LISPINT long long
+#define LISPINT_FORMAT "%lld"
 
 #define MAX_ERROR 1000
 

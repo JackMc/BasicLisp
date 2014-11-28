@@ -1,7 +1,7 @@
 #ifndef LISP_INT_H_
 #define LISP_INT_H_
 
-#include <stido.h>
+#include <stdio.h>
 
 // Measured in units of LONG_MAX
 #define DEFAULT_PRECISION 3

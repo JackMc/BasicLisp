@@ -22,10 +22,10 @@ struct lisp_object *nil;
 
 struct symbol *symbol_table;
 int symbol_table_counter;
-static int symbol_table_size;
+static size_t symbol_table_size;
 
 struct symbol *local_symbols;
-int local_symbols_counter;
+size_t local_symbols_counter;
 
 char *glob_error;
 
@@ -100,7 +100,7 @@ struct lisp_object *lisp_object_deep_copy(struct lisp_object *obj) {
   case INTEGER:
   {
     LISPINT *data = malloc(sizeof(LISPINT));
-    *data = *((int*)(obj->data));
+    *data = TOLINT(obj);
 
     ret->data = data;
     break;
@@ -122,7 +122,6 @@ struct lisp_object *lisp_object_deep_copy(struct lisp_object *obj) {
   case T_TYPE:
   {
     return t;
-    break;
   }
   default:
     break;
@@ -173,7 +172,7 @@ struct lisp_object *symbol_value(char *key) {
   return sym ? sym->value : NULL;
 }
 
-void set_local_symbols(struct symbol *syms, int length) {
+void set_local_symbols(struct symbol *syms, size_t length) {
   local_symbols = syms;
   local_symbols_counter = length;
 }
