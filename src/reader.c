@@ -10,11 +10,19 @@
 
 #include "lisp.h"
 
-#include <stdio.h>
-#include <ctype.h>
 #include <stdlib.h>
+#include <ctype.h>
 
-static void mk_symbol(struct lisp_object *ret, FILE *input, char initial) {
+// Checks if there was an end of file while calling getc
+#define READ_FGETC(inp, c) do {\
+c = fgetc(inp);\
+if (feof(inp)) { \
+set_error("Unexpected end-of-file while parsing."); \
+return NULL; \
+} \
+} while(0)
+
+static struct lisp_object *mk_symbol(struct lisp_object *ret, FILE *input, char initial) {
   /* Make a base buffer with a reasonable estimate of how big the
    * symbol will be.
    */
@@ -24,7 +32,7 @@ static void mk_symbol(struct lisp_object *ret, FILE *input, char initial) {
 
   char in;
   int i = 0;
-  in = fgetc(input);
+  READ_FGETC(input, in);
 
   while (!isspace(in) && in != ')') {
     if (i == text_size) {
@@ -35,7 +43,7 @@ static void mk_symbol(struct lisp_object *ret, FILE *input, char initial) {
     text[i] = in;
     i++;
 
-    in = fgetc(input);
+    READ_FGETC(input, in);
   }
 
   ungetc(in, input);
@@ -49,6 +57,8 @@ static void mk_symbol(struct lisp_object *ret, FILE *input, char initial) {
   /* Symbol name is now in text */
   ret->obj_type = SYMBOL;
   ret->data = text;
+
+  return ret;
 }
 
 struct lisp_object *c_read(FILE *input) {
@@ -58,17 +68,12 @@ struct lisp_object *c_read(FILE *input) {
 
   struct lisp_object *ret = malloc(sizeof(struct lisp_object));
 
-  char initial = fgetc(input);
+  char initial;
+  READ_FGETC(input, initial);
 
   /* Skip any whitespace */
   while (isspace(initial)) {
-    initial = fgetc(input);
-  }
-
-  if (feof(input)) {
-    set_error("Unexpected end-of-file while parsing.");
-
-    return NULL;
+    READ_FGETC(input, initial);
   }
 
   /* Terminates the current list. */
@@ -79,7 +84,7 @@ struct lisp_object *c_read(FILE *input) {
   if (initial == '\'') {
     ret->quoted = C_TRUE;
     /* Read the next character */
-    initial = fgetc(input);
+    READ_FGETC(input, initial);
   }
 
   /* List */
@@ -114,13 +119,19 @@ struct lisp_object *c_read(FILE *input) {
   else if (initial == '-' || isdigit(initial)) {
     /* There is a special case in that "-" can be a symbol */
     if (initial == '-') {
-      char checker = fgetc(input);
+      char checker;
+
+      READ_FGETC(input, checker);
+
 
       /* Therefore, we check if the - is immediately followed by whitespace */
       if (isspace(checker)) {
         ungetc(checker, input);
 
-        mk_symbol(ret, input, initial);
+        if (!mk_symbol(ret, input, initial)) {
+          set_error("Unexpected end-of-file while parsing.");
+          return NULL;
+        }
 
         return ret;
       }
@@ -142,7 +153,7 @@ struct lisp_object *c_read(FILE *input) {
 
     char in;
     int i = 0;
-    in = fgetc(input);
+    READ_FGETC(input, in);
 
     while (in != '"') {
       if (i == text_size) {
@@ -153,7 +164,7 @@ struct lisp_object *c_read(FILE *input) {
       text[i] = in;
       i++;
 
-      in = fgetc(input);
+      READ_FGETC(input, in);
     }
 
     /* Terminate the string */
@@ -168,7 +179,10 @@ struct lisp_object *c_read(FILE *input) {
   }
   /* Symbol */
   else {
-    mk_symbol(ret, input, initial);
+    if (!mk_symbol(ret, input, initial)) {
+      set_error("Unexpected end-of-file while parsing.");
+      return NULL;
+    }
   }
 
   return ret;

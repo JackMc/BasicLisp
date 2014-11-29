@@ -192,7 +192,7 @@ struct lisp_object *make_lisp_object(enum type obj_type, void *data);
 #define TRUEP(obj) true_p(obj)
 
 /* Possibly changing constants */
-/* Not necessarily a max length for a symbol. It is much more efficient if a
+/* Not necessarily a max length for a symbol. It is more efficient if a
  * symbol's length is smaller than this.
  */
 #define BASE_SYMBOL_LENGTH 35
