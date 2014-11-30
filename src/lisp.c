@@ -50,7 +50,7 @@ void lisp_initialize() {
   struct symbol *t_symbol = get_new_symbol();
   t_symbol->symbol_name = "t";
   t_symbol->value = t;
-  t_symbol->constant = C_TRUE;
+  t_symbol->builtin = C_TRUE;
 
   /* Nil - The FALSE value in Lisp. Equivalent in value to an empty list. */
   /* With a list, NULL data means an empty list. */
@@ -59,7 +59,7 @@ void lisp_initialize() {
   struct symbol *nil_symbol = get_new_symbol();
   nil_symbol->symbol_name = "nil";
   nil_symbol->value = nil;
-  nil_symbol->constant = C_TRUE;
+  nil_symbol->builtin = C_TRUE;
 
   glob_error = NULL;
 
@@ -139,7 +139,7 @@ struct symbol *get_new_symbol() {
 
   struct symbol *sym = &(symbol_table[symbol_table_counter++]);
 
-  sym->constant = C_FALSE;
+  sym->builtin = C_FALSE;
 
   return sym;
 }
@@ -183,7 +183,7 @@ void unset_local_symbols() {
 }
 
 void define_builtin_function(char *symbol_name, enum paramspec spec, int numparams,
-			     struct lisp_object* (*func)(struct lisp_object*)) {
+			     struct lisp_object* (*func)(struct lisp_object*), C_BOOL is_builtin) {
   /* Handles the allocation of the symbol from the pool */
   struct symbol *sym = get_new_symbol();
   
@@ -194,6 +194,7 @@ void define_builtin_function(char *symbol_name, enum paramspec spec, int numpara
 
   sym->symbol_name = symbol_name;
   sym->value = make_lisp_object(BUILTIN, builtin);
+  sym->builtin = is_builtin;
 }
 
 int list_length(struct lisp_object *list) {

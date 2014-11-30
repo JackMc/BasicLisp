@@ -144,8 +144,8 @@ DEFUN("setq", lisp_setq, VAR_FIXED | UNEVAL_ARGS, 2) {
   if (!sym) {
     sym = get_new_symbol();
   }
-  else if (sym->constant) {
-    set_error("Symbol %s is a fundamental constant and cannot be modified.", sym->symbol_name);
+  else if (sym->builtin) {
+    set_error("Symbol %s is a fundamental constant or builtin and cannot be modified.", sym->symbol_name);
     return NULL;
   }
 

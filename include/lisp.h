@@ -57,7 +57,7 @@ extern struct lisp_object *nil;
 struct symbol {
   char *symbol_name;
   struct lisp_object *value;
-  C_BOOL constant;
+  C_BOOL builtin;
 };
 
 extern struct symbol *symbol_table;
@@ -127,7 +127,7 @@ enum paramspec {
  *                                      returned back to the Lisp code.
  */
 void define_builtin_function(char *symbol_name, enum paramspec spec, int numparams,
-			     struct lisp_object* (*func)(struct lisp_object*));
+			     struct lisp_object* (*func)(struct lisp_object*), C_BOOL is_builtin);
 
 struct symbol *symbol_lookup(char *key);
 struct lisp_object *symbol_value(char *key);
@@ -177,7 +177,7 @@ struct lisp_function {
 #define DEFUN(lisp_name, func_name, spec, numparams) \
   struct lisp_object * func_name (struct lisp_object*); \
   void func_name ## _init () { \
-    define_builtin_function( lisp_name , spec , numparams , func_name ); \
+    define_builtin_function( lisp_name , spec , numparams , func_name, C_TRUE ); \
   } \
   DEFUN_NO_INIT(func_name)
 

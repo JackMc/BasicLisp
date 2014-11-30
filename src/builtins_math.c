@@ -19,6 +19,11 @@ DEFUN("+", lisp_add, VAR_MIN, 2) {
   struct lisp_object *current = HEAD(args);
 
   while (current) {
+    if (current->obj_type != INTEGER) {
+      set_error("Incorrect argument types to '+'");
+      return NULL;
+    }
+
     (*sum) += TOLINT(current);
     current = current->next;
   }
@@ -36,6 +41,11 @@ DEFUN("-", lisp_subtract, VAR_MIN, 2) {
   current = current->next;
 
   while (current) {
+    if (current->obj_type != INTEGER) {
+      set_error("Incorrect argument types to '-'");
+      return NULL;
+    }
+
     (*sum) -= TOLINT(current);
     current = current->next;
   }
@@ -53,6 +63,11 @@ DEFUN("*", lisp_multiply, VAR_MIN, 2) {
   current = current->next;
 
   while (current) {
+    if (current->obj_type != INTEGER) {
+      set_error("Incorrect argument types to '*'");
+      return NULL;
+    }
+
     (*ret) *= TOLINT(current);
     current = current->next;
   }
@@ -70,6 +85,11 @@ DEFUN("/", lisp_divide, VAR_MIN, 2) {
   current = current->next;
 
   while (current) {
+    if (current->obj_type != INTEGER) {
+      set_error("Incorrect argument types to '/'");
+      return NULL;
+    }
+
     (*ret) /= TOLINT(current);
     current = current->next;
   }
@@ -84,6 +104,11 @@ DEFUN("%", lisp_mod, VAR_FIXED, 2) {
 
   struct lisp_object *second = first->next;
 
+  if (first->obj_type != INTEGER || second->obj_type != INTEGER) {
+    set_error("Incorrect argument types to '%'");
+    return NULL;
+  }
+
   (*ret) = TOLINT(first) % TOLINT(second);
 
   return make_lisp_object(INTEGER, ret);
@@ -95,6 +120,11 @@ DEFUN("^", lisp_power, VAR_FIXED, 2) {
   struct lisp_object *first = HEAD(args);
 
   struct lisp_object *second = first->next;
+
+  if (first->obj_type != INTEGER || second->obj_type != INTEGER) {
+    set_error("Incorrect argument types to '^'");
+    return NULL;
+  }
 
   (*ret) = pow(TOLINT(first), TOLINT(second));
 
