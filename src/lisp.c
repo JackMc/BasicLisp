@@ -251,10 +251,10 @@ void set_error(char *error, ...) {
   va_list va;
   va_start(va, error);
 
-  /* HACK: No way to tell if the expanded message will be > MAX_ERROR */
+  /* The maximum length for an error message is MAX_ERROR. It will be cut off after that. */
   char *buf = malloc(MAX_ERROR*sizeof(char));
 
-  vsprintf(buf, error, va);
+  vsnprintf(buf, MAX_ERROR, error, va);
 
   glob_error = buf;
 }
