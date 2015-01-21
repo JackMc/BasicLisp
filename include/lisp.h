@@ -133,6 +133,7 @@ struct symbol *symbol_lookup(char *key);
 struct lisp_object *symbol_value(char *key);
 void set_local_symbols(struct symbol *symbols, size_t count);
 void unset_local_symbols();
+C_BOOL symbol_reassign(struct symbol *sym, char *name, void *value);
 
 /*
  * Set the error and the error flag

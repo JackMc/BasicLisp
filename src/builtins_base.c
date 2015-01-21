@@ -144,13 +144,11 @@ DEFUN("setq", lisp_setq, VAR_FIXED | UNEVAL_ARGS, 2) {
   if (!sym) {
     sym = get_new_symbol();
   }
-  else if (sym->builtin) {
-    set_error("Symbol %s is a fundamental constant or builtin and cannot be modified.", sym->symbol_name);
+
+  if (!symbol_reassign(sym, SYM_NAME(sym_obj), value)) {
+    // This function sets the lisp_error
     return NULL;
   }
-
-  sym->symbol_name = SYM_NAME(sym_obj);
-  sym->value = value;
 
   return nil;
 }
@@ -225,8 +223,10 @@ DEFUN("defun", lisp_defun, VAR_MIN | UNEVAL_ARGS, 3) {
     sym = get_new_symbol();
   }
 
-  sym->symbol_name = SYM_NAME(name);
-  sym->value = make_lisp_object(FUNCTION, func);
+  if (!symbol_reassign(sym, SYM_NAME(name), func)) {
+      // This function sets the lisp_error
+      return NULL;
+  }
 
   return sym->value;
 }

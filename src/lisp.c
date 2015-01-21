@@ -277,3 +277,18 @@ void lisp_error() {
   }
   return;
 }
+
+C_BOOL symbol_reassign(struct symbol *sym, char *name, void *value) {
+  if (!value) {
+    // We are gonna rely on the fact that it was set in c_eval
+    return C_FALSE;
+  }
+  else if (sym->builtin) {
+    set_error("Symbol %s is a fundamental constant or builtin and cannot be modified.", sym->symbol_name);
+    return C_FALSE;
+  }
+
+  sym->symbol_name = name;
+  sym->value = value;
+  return C_TRUE;
+}
