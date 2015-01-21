@@ -204,6 +204,11 @@ DEFUN("defun", lisp_defun, VAR_MIN | UNEVAL_ARGS, 3) {
   struct lisp_object *params = name->next;
   struct lisp_object *forms = params->next;
 
+  if (params->obj_type != LIST) {
+      set_error("Params must be of type LIST");
+      return NULL;
+  }
+
   /* Separate the params and forms */
   params->next = NULL;
   forms->prev = NULL;
@@ -223,7 +228,28 @@ DEFUN("defun", lisp_defun, VAR_MIN | UNEVAL_ARGS, 3) {
   sym->symbol_name = SYM_NAME(name);
   sym->value = make_lisp_object(FUNCTION, func);
 
-  return name;
+  return sym->value;
+}
+
+DEFUN("lambda", lisp_lambda, VAR_MIN | UNEVAL_ARGS, 2) {
+    /* To define a function, first we need the parameters list and the forms */
+    struct lisp_object *params = HEAD(args);
+    struct lisp_object *forms = params->next;
+
+    if (params->obj_type != LIST) {
+        set_error("Params must be of type LIST.");
+        return NULL;
+    }
+    
+    /* Separate the params and forms */
+    params->next = NULL;
+    forms->prev = NULL;
+
+    struct lisp_function *func = malloc(sizeof(struct lisp_function));
+    func->params = params;
+    func->forms = forms;
+    func->numparams = list_length(params);
+    return make_lisp_object(FUNCTION, func);
 }
 
 DEFUN("symbols", lisp_symbols, VAR_FIXED, 0) {
@@ -316,6 +342,7 @@ void base_initialize() {
   lisp_progn_init();
   lisp_while_init();
   lisp_defun_init();
+  lisp_lambda_init();
   lisp_symbols_init();
   lisp_cdr_init();
   lisp_car_init();

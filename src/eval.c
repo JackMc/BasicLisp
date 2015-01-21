@@ -37,11 +37,6 @@ struct lisp_object *c_eval(struct lisp_object *obj) {
       return ret;
     }
 
-    if (head->obj_type != SYMBOL || head->quoted) {
-      set_error("First item of list to be evaluated must be a non-quoted symbol.");
-      return NULL;
-    }
-
     struct lisp_object *func = c_eval(head);
 
     if (!func) {
@@ -50,7 +45,7 @@ struct lisp_object *c_eval(struct lisp_object *obj) {
     }
 
     if (func->obj_type != BUILTIN && func->obj_type != FUNCTION) {
-      set_error("Symbol %s isn't a function.", SYM_NAME(head));
+      set_error("First object in list is not a function.", SYM_NAME(head));
       return NULL;
     }
 
@@ -128,8 +123,10 @@ struct lisp_object *c_eval(struct lisp_object *obj) {
 
       int count = list_length(args);
 
+      char *func_name = head->obj_type == SYMBOL ? TOSTR(head) : "<unnamed lambda>";
+
       if (count != func_obj->numparams) {
-        set_error("Incorrect number of arguments (%d) to function %s!", count, TOSTR(head));
+        set_error("Incorrect number of arguments (%d) to function %s!", count, func_name);
         return NULL;
       }
 
