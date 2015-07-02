@@ -110,9 +110,7 @@ struct lisp_object *lisp_object_deep_copy(struct lisp_object *obj);
  * Defines the way parameters are restricted.
  */
 enum paramspec {
-  VAR_FIXED = 0x0001, /* The number of parameters must be equal to numparams */
-  VAR_MIN = 0x0010, /* Defines the function as having a minimum number of arguments, as defined by numparams */
-  VAR_MAX = 0x0100, /* Defines the function as having a maximum number of arguments, as defined by numparams */
+  EVAL_ARGS = 0,
   UNEVAL_ARGS = 0x1000 /* Do not evaluate the arguments to this function. */
 };
 
@@ -126,8 +124,8 @@ enum paramspec {
  *                                      LIST of the passed-in parameters. Returns a lisp_object which will be
  *                                      returned back to the Lisp code.
  */
-void define_builtin_function(char *symbol_name, enum paramspec spec, int numparams,
-			     struct lisp_object* (*func)(struct lisp_object*), C_BOOL is_builtin);
+void define_builtin_function(char *symbol_name, enum paramspec spec, int min_params,
+			     int max_params, struct lisp_object* (*func)(struct lisp_object*), C_BOOL is_builtin);
 
 struct symbol *symbol_lookup(char *key);
 struct lisp_object *symbol_value(char *key);
@@ -159,7 +157,8 @@ C_BOOL has_error();
 struct lisp_builtin {
   struct lisp_object* (*func)(struct lisp_object*);
   enum paramspec spec;
-  int params;
+  int min_params;
+  int max_params;
 };
 
 /*
@@ -175,10 +174,10 @@ struct lisp_function {
 };
 
 /* Macro to define a function from C. This requires that this be called in register_builtins() in lisp.c */
-#define DEFUN(lisp_name, func_name, spec, numparams) \
+#define DEFUN(lisp_name, func_name, spec, min, max) \
   struct lisp_object * func_name (struct lisp_object*); \
   void func_name ## _init () { \
-    define_builtin_function( lisp_name , spec , numparams , func_name, C_TRUE ); \
+    define_builtin_function( lisp_name , spec , min , max , func_name, C_TRUE ); \
   } \
   DEFUN_NO_INIT(func_name)
 

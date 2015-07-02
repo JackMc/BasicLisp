@@ -15,7 +15,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-DEFUN("<", lisp_lt, VAR_FIXED, 2) {
+DEFUN("<", lisp_lt, EVAL_ARGS, 2, -1) {
   struct lisp_object *first = HEAD(args);
   struct lisp_object *second = first->next;
 
@@ -32,7 +32,7 @@ DEFUN("<", lisp_lt, VAR_FIXED, 2) {
   }
 }
 
-DEFUN(">", lisp_gt, VAR_FIXED, 2) {
+DEFUN(">", lisp_gt, EVAL_ARGS, 2, -1) {
   struct lisp_object *first = HEAD(args);
   struct lisp_object *second = first->next;
 
@@ -49,7 +49,7 @@ DEFUN(">", lisp_gt, VAR_FIXED, 2) {
   }
 }
 
-DEFUN("=", lisp_eq, VAR_FIXED, 2) {
+DEFUN("=", lisp_eq, EVAL_ARGS, 2, -1) {
   struct lisp_object *first = HEAD(args);
   struct lisp_object *second = first->next;
 
@@ -69,13 +69,8 @@ DEFUN("=", lisp_eq, VAR_FIXED, 2) {
 /*
  * (IF CONDITION THEN-CLAUSE ELSE-CLAUSE)
  */
-DEFUN("if", lisp_if, VAR_MIN | UNEVAL_ARGS, 2) {
+DEFUN("if", lisp_if, UNEVAL_ARGS, 2, 3) {
   int length = list_length(args);
-
-  if (length > 3) {
-    set_error("Incorrect number of arguments (%d) to function if!", length);
-    return NULL;
-  }
 
   struct lisp_object *head = HEAD(args);
 
@@ -100,7 +95,7 @@ DEFUN("if", lisp_if, VAR_MIN | UNEVAL_ARGS, 2) {
   }
 }
 
-DEFUN("prints", lisp_prints, VAR_FIXED, 1) {
+DEFUN("prints", lisp_prints, EVAL_ARGS, 1, 1) {
   if (HEAD(args)->obj_type != STRING) {
     set_error("Argument to prints must be a string.");
     return NULL;
@@ -113,7 +108,7 @@ DEFUN("prints", lisp_prints, VAR_FIXED, 1) {
   return nil;
 }
 
-DEFUN("print", lisp_print, VAR_MIN, 1) {
+DEFUN("print", lisp_print, EVAL_ARGS, 1, 1) {
   struct lisp_object *current = HEAD(args);
 
   while (current) {
@@ -125,7 +120,7 @@ DEFUN("print", lisp_print, VAR_MIN, 1) {
   return nil;
 }
 
-DEFUN("setq", lisp_setq, VAR_FIXED | UNEVAL_ARGS, 2) {
+DEFUN("setq", lisp_setq, UNEVAL_ARGS, 2, 2) {
   struct lisp_object *sym_obj = HEAD(args);
 
   if (sym_obj->obj_type != SYMBOL) {
@@ -153,7 +148,7 @@ DEFUN("setq", lisp_setq, VAR_FIXED | UNEVAL_ARGS, 2) {
   return nil;
 }
 
-DEFUN("while", lisp_while, VAR_FIXED | UNEVAL_ARGS, 2) {
+DEFUN("while", lisp_while, UNEVAL_ARGS, 2, 2) {
   struct lisp_object *cond = HEAD(args);
   struct lisp_object *body = cond->next;
 
@@ -182,7 +177,7 @@ DEFUN("while", lisp_while, VAR_FIXED | UNEVAL_ARGS, 2) {
   return body_evaled;
 }
 
-DEFUN("progn", lisp_progn, VAR_MIN | UNEVAL_ARGS, 1) {
+DEFUN("progn", lisp_progn, UNEVAL_ARGS, 1, -1) {
   struct lisp_object *current = HEAD(args);
 
   struct lisp_object *evaled = nil;
@@ -196,7 +191,7 @@ DEFUN("progn", lisp_progn, VAR_MIN | UNEVAL_ARGS, 1) {
   return evaled;
 }
 
-DEFUN("defun", lisp_defun, VAR_MIN | UNEVAL_ARGS, 3) {
+DEFUN("defun", lisp_defun, UNEVAL_ARGS, 3, -1) {
   /* To define a function, first we need the parameters list and the forms */
   struct lisp_object *name = HEAD(args);
   struct lisp_object *params = name->next;
@@ -231,7 +226,7 @@ DEFUN("defun", lisp_defun, VAR_MIN | UNEVAL_ARGS, 3) {
   return sym->value;
 }
 
-DEFUN("lambda", lisp_lambda, VAR_MIN | UNEVAL_ARGS, 2) {
+DEFUN("lambda", lisp_lambda, UNEVAL_ARGS, 2, -1) {
     /* To define a function, first we need the parameters list and the forms */
     struct lisp_object *params = HEAD(args);
     struct lisp_object *forms = params->next;
@@ -252,7 +247,7 @@ DEFUN("lambda", lisp_lambda, VAR_MIN | UNEVAL_ARGS, 2) {
     return make_lisp_object(FUNCTION, func);
 }
 
-DEFUN("symbols", lisp_symbols, VAR_FIXED, 0) {
+DEFUN("symbols", lisp_symbols, EVAL_ARGS, 0, 0) {
   int i;
 
   struct lisp_object *head = make_lisp_object(LIST, NULL);
@@ -286,7 +281,7 @@ DEFUN("symbols", lisp_symbols, VAR_FIXED, 0) {
 }
 
 /* Returns the CAR (the first element) of the given list. */
-DEFUN("car", lisp_car, VAR_FIXED, 1) {
+DEFUN("car", lisp_car, EVAL_ARGS, 1, 1) {
   struct lisp_object *list = HEAD(args);
 
   if (list->obj_type != LIST) {
@@ -306,7 +301,7 @@ DEFUN("car", lisp_car, VAR_FIXED, 1) {
   return ret;
 }
 
-DEFUN("cdr", lisp_cdr, VAR_FIXED, 1) {
+DEFUN("cdr", lisp_cdr, EVAL_ARGS, 1, 1) {
   struct lisp_object *list = HEAD(args);
 
   if (list->obj_type != LIST) {

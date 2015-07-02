@@ -6,8 +6,8 @@
 
 #include <stdlib.h>
 
-DEFUN("exit", lisp_exit, VAR_FIXED, 0) {
-  exit(0);
+DEFUN("exit", lisp_exit, EVAL_ARGS, 0, 1) {
+  exit(args->next ? (int)TOLINT(args->next) : 0);
 }
 
 void interpreter_initialize() {

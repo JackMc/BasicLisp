@@ -103,17 +103,12 @@ struct lisp_object *c_eval(struct lisp_object *obj) {
 
       struct lisp_builtin *builtin = TOBUILTIN(func);
 
-      if ((builtin->spec & VAR_FIXED) && builtin->params != count) {
+      if (builtin->max_params != -1 && count > builtin->max_params) {
         set_error("Incorrect number of arguments (%d) to function %s!", count, TOSTR(head));
-        return NULL;
       }
-      else if ((builtin->spec & VAR_MIN) && count < builtin->params) {
+
+      if (builtin->min_params != -1 && count < builtin->min_params) {
         set_error("Incorrect number of arguments (%d) to function %s!", count, TOSTR(head));
-        return NULL;
-      }
-      else if ((builtin->spec & VAR_MAX) && count > builtin->params) {
-        set_error("Incorrect number of arguments (%d) to function %s!", count, TOSTR(head));
-        return NULL;
       }
 
       return builtin->func(args);

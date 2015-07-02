@@ -13,7 +13,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-DEFUN("+", lisp_add, VAR_MIN, 2) {
+DEFUN("+", lisp_add, EVAL_ARGS, 2, -1) {
   LISPINT *sum = malloc(sizeof(LISPINT));
 
   struct lisp_object *current = HEAD(args);
@@ -31,7 +31,7 @@ DEFUN("+", lisp_add, VAR_MIN, 2) {
   return make_lisp_object(INTEGER, sum);
 }
 
-DEFUN("-", lisp_subtract, VAR_MIN, 2) {
+DEFUN("-", lisp_subtract, EVAL_ARGS, 2, -1) {
   LISPINT *sum = malloc(sizeof(LISPINT));
 
   struct lisp_object *current = HEAD(args);
@@ -53,7 +53,7 @@ DEFUN("-", lisp_subtract, VAR_MIN, 2) {
   return make_lisp_object(INTEGER, sum);
 }
 
-DEFUN("*", lisp_multiply, VAR_MIN, 2) {
+DEFUN("*", lisp_multiply, EVAL_ARGS, 2, -1) {
   LISPINT *ret = malloc(sizeof(LISPINT));
 
   struct lisp_object *current = HEAD(args);
@@ -75,7 +75,7 @@ DEFUN("*", lisp_multiply, VAR_MIN, 2) {
   return make_lisp_object(INTEGER, ret);
 }
 
-DEFUN("/", lisp_divide, VAR_MIN, 2) {
+DEFUN("/", lisp_divide, EVAL_ARGS, 2, -1) {
   LISPINT *ret = malloc(sizeof(LISPINT));
 
   struct lisp_object *current = HEAD(args);
@@ -97,7 +97,7 @@ DEFUN("/", lisp_divide, VAR_MIN, 2) {
   return make_lisp_object(INTEGER, ret);
 }
 
-DEFUN("%", lisp_mod, VAR_FIXED, 2) {
+DEFUN("%", lisp_mod, EVAL_ARGS, 2, 2) {
   LISPINT *ret = malloc(sizeof(LISPINT));
 
   struct lisp_object *first = HEAD(args);
@@ -114,7 +114,7 @@ DEFUN("%", lisp_mod, VAR_FIXED, 2) {
   return make_lisp_object(INTEGER, ret);
 }
 
-DEFUN("^", lisp_power, VAR_FIXED, 2) {
+DEFUN("^", lisp_power, EVAL_ARGS, 2, 2) {
   LISPINT * ret = malloc(sizeof(LISPINT));
 
   struct lisp_object *first = HEAD(args);

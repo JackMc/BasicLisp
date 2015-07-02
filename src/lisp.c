@@ -182,7 +182,7 @@ void unset_local_symbols() {
   local_symbols_counter = 0;
 }
 
-void define_builtin_function(char *symbol_name, enum paramspec spec, int numparams,
+void define_builtin_function(char *symbol_name, enum paramspec spec, int min_params, int max_params,
 			     struct lisp_object* (*func)(struct lisp_object*), C_BOOL is_builtin) {
   /* Handles the allocation of the symbol from the pool */
   struct symbol *sym = get_new_symbol();
@@ -190,7 +190,8 @@ void define_builtin_function(char *symbol_name, enum paramspec spec, int numpara
   struct lisp_builtin *builtin = malloc(sizeof(struct lisp_builtin));
   builtin->func = func;
   builtin->spec = spec;
-  builtin->params = numparams;
+  builtin->min_params = min_params;
+  builtin->max_params = max_params;
 
   sym->symbol_name = symbol_name;
   sym->value = make_lisp_object(BUILTIN, builtin);
