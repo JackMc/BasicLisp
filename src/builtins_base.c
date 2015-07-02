@@ -218,7 +218,7 @@ DEFUN("defun", lisp_defun, UNEVAL_ARGS, 3, -1) {
     sym = get_new_symbol();
   }
 
-  if (!symbol_reassign(sym, SYM_NAME(name), func)) {
+  if (!symbol_reassign(sym, SYM_NAME(name), make_lisp_object(FUNCTION, func))) {
       // This function sets the lisp_error
       return NULL;
   }
